@@ -110,4 +110,64 @@ public class Permutations {
                                     35, 3, 43, 11, 51, 19, 59, 27,
                                     34, 2, 42, 10, 50, 18, 58, 26,
                                     33, 1, 41, 9, 49, 17, 57, 25 };
+
+    public static int[] getInitialPermutation() {
+        return initialPermutation;
+    }
+
+    public static int[] getPermutedChoice() {
+        return permutedChoice;
+    }
+
+    public static int[] getShiftTab() {
+        return shiftTab;
+    }
+
+    public static int[] getPermutedChoiceTwo() {
+        return permutedChoiceTwo;
+    }
+
+    public static int[] getExtensionPermutation() {
+        return extensionPermutation;
+    }
+
+    public static int[] getS1() {
+        return S1;
+    }
+
+    public static int[] getS2() {
+        return S2;
+    }
+
+    public static int[] getS3() {
+        return S3;
+    }
+
+    public static int[] getS4() {
+        return S4;
+    }
+
+    public static int[] getS5() {
+        return S5;
+    }
+
+    public static int[] getS6() {
+        return S6;
+    }
+
+    public static int[] getS7() {
+        return S7;
+    }
+
+    public static int[] getS8() {
+        return S8;
+    }
+
+    public static int[] getPermutationFunction() {
+        return permutationFunction;
+    }
+
+    public static int[] getFinalPermutation() {
+        return finalPermutation;
+    }
 }

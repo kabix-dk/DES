@@ -1,12 +1,11 @@
 import impl.Des;
+import impl.Key;
 
 public class Main {
 
     public static void main(String[] args) {
-        char[] key = Des.generateKey();
-        for(char c : key) {
-            String res = Integer.toBinaryString(c);
-            System.out.println(("00000000" + res).substring(res.length()));
-        }
+        String message = "abcdefgh";
+        Des des = new Des(new Key(), message);
+        des.execute();
     }
 }
