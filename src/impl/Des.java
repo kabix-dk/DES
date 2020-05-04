@@ -2,6 +2,7 @@ package impl;
 
 import utils.Permutations;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 public class Des {
@@ -15,7 +16,18 @@ public class Des {
     }
 
     public String execute() {
-        long messageValue = parseBytesToLong(parseStringToBytes(message));
+        // Transform String to Long
+        StringBuffer sb = new StringBuffer();
+        char ch[] = message.toCharArray();
+        for (int i=0; i<ch.length; i++) {
+            String hexString = Integer.toHexString(ch[i]);
+            sb.append(hexString);
+        }
+        String res = sb.toString();
+        BigInteger msValue = new BigInteger(res, 16);
+
+        // Init Values
+        long messageValue = msValue.longValue();
         long keyValue = key.getValue();
         long[] subKeys;
 
@@ -64,6 +76,7 @@ public class Des {
             r = prevL ^ f(r, subKeys[i]);
         }
         long result = (r & 0xFFFFFFFFL) << 32 | (l & 0xFFFFFFFFL);
+        System.out.println("Result before final permutation: " + Long.toBinaryString(result));
         return permute(Permutations.getFinalPermutation(), 64, result);
     }
 

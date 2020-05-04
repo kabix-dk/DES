@@ -8,7 +8,7 @@ public class Key {
     private long value;
 
     public Key() {
-        this.value = parseBytesToLong(parseStringToBytes("ffffffff"));
+        this.value = parseBytesToLong(parseStringToBytes("abcdefgh"));
 //        this.value = generateKey();
     }
 

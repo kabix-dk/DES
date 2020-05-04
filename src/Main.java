@@ -13,7 +13,6 @@ public class Main {
             String encryptedMessage = "";
             String message = readFileAsString(pathToFile);
             message = message.replace(" ", "");
-
             Key key = new Key();
             System.out.println("Generated key: " + Long.toBinaryString(key.getValue()) + "\n");
 
@@ -25,8 +24,6 @@ public class Main {
                 System.out.println("\n");
             }
             System.out.println("Encrypted message: " + encryptedMessage);
-//            Des des = new Des(key, encryptedMessage);
-//            System.out.println(des.execute());
         } catch (IOException e) {
             e.printStackTrace();
         }
