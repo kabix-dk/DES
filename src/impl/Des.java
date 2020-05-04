@@ -14,16 +14,20 @@ public class Des {
         this.message = message;
     }
 
-    public void execute() {
+    public String execute() {
         long messageValue = parseBytesToLong(parseStringToBytes(message));
         long keyValue = key.getValue();
         long[] subKeys;
 
+        System.out.println("Message:                               " + Long.toBinaryString(messageValue));
+
         // Initial Permutation
         messageValue = permute(Permutations.getInitialPermutation(), 64, messageValue);
+        System.out.println("Message after initial permutation:     " + Long.toBinaryString(messageValue));
 
         // Permuted choice
         keyValue = permute(Permutations.getPermutedChoice(), 64, keyValue);
+        System.out.println("Key after permuted choice permutation: " + Long.toBinaryString(keyValue));
 
         // Divide, shift and union key
         subKeys = divideShiftAndUnionKey(keyValue);
@@ -33,9 +37,24 @@ public class Des {
         int r = (int) (messageValue & 0xFFFFFFFFL);
 
         long encryptedMessage = encrypt(l, r, subKeys);
-        System.out.println(Long.toBinaryString(encryptedMessage));
-        String result = new String(parseLongToBytes(encryptedMessage));
-        System.out.println(result);
+
+        StringBuilder result = new StringBuilder();
+        String hexResult = Long.toHexString(encryptedMessage);
+        System.out.print("Encrypted block as a Hex: ");
+        for (int i=0; i<hexResult.length()-1; i+=2) {
+            String temp = hexResult.substring(i, (i+2));
+            System.out.print(temp + " ");
+
+            int decimal = Integer.parseInt(temp, 16);
+
+            result.append((char) decimal);
+        }
+
+        System.out.println("");
+
+        System.out.println("Encrypted block as a String: " + result);
+
+        return result.toString();
     }
 
     private long encrypt(int l, int r, long[] subKeys) {
@@ -83,6 +102,7 @@ public class Des {
             }
             long result = (c & 0xFFFFFFFFL) << 28 | (d & 0xFFFFFFFFL);
             resultKeys[i] = permute(Permutations.getPermutedChoiceTwo(), 56, result);
+            System.out.println("SubKey nr. " + (i+1) + " : " + Long.toBinaryString(resultKeys[i]));
         }
 
         return resultKeys;
