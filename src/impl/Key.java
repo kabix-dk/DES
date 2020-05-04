@@ -8,18 +8,12 @@ public class Key {
     private long value;
 
     public Key() {
-        this.value = generateKey();
+        this.value = parseBytesToLong(parseStringToBytes("13345779"));
     }
 
     private long generateKey() {
         Random random = new Random();
         return Math.abs(random.nextLong());
-    }
-
-    public byte[] parseToBytes() {
-        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-        buffer.putLong(this.value);
-        return buffer.array();
     }
 
     public long getValue() {
@@ -35,5 +29,16 @@ public class Key {
         return "Key{" +
                 "value=" + value +
                 '}';
+    }
+
+    private byte[] parseStringToBytes(String s) {
+        return s.getBytes();
+    }
+
+    private long parseBytesToLong(byte[] bytes) {
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.put(bytes);
+        buffer.flip();
+        return buffer.getLong();
     }
 }

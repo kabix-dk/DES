@@ -28,6 +28,42 @@ public class Des {
         // Divide, shift and union key
         subKeys = divideShiftAndUnionKey(keyValue);
 
+        // Divide message to left and right parts
+        int l = (int) (messageValue >> 32);
+        int r = (int) (messageValue & 0xFFFFFFFFL);
+
+        long encryptedMessage = encrypt(l, r, subKeys);
+        System.out.println(Long.toBinaryString(encryptedMessage));
+        String result = new String(parseLongToBytes(encryptedMessage));
+        System.out.println(result);
+    }
+
+    private long encrypt(int l, int r, long[] subKeys) {
+        for (int i=0; i<16; i++) {
+            int prevL = l;
+            l = r;
+            r = prevL ^ f(r, subKeys[i]);
+        }
+        long result = (r & 0xFFFFFFFFL) << 32 | (l & 0xFFFFFFFFL);
+        return permute(Permutations.getFinalPermutation(), 64, result);
+    }
+
+    private int f(int R, long key) {
+        long extendedR = permute(Permutations.getExtensionPermutation(), 32, R);
+        long xor = extendedR ^ key;
+        int result = 0;
+        int[][] S = Permutations.getS();
+
+        for (int i=0; i<8; i++) {
+            result >>>= 4;
+            int position = (int) (xor & 0x3F);
+            position = (position & 0x20 | ((position & 0x01) << 4) | ((position & 0x1E) >> 1));
+            int sValue = S[7-i][position];
+            result |= sValue << 28;
+            xor >>= 6;
+        }
+
+        return (int) permute(Permutations.getPermutationFunction(), 32, result);
     }
 
     private long[] divideShiftAndUnionKey(long value) {
@@ -61,6 +97,12 @@ public class Des {
         buffer.put(bytes);
         buffer.flip();
         return buffer.getLong();
+    }
+
+    private byte[] parseLongToBytes(long l) {
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.putLong(l);
+        return buffer.array();
     }
 
     private long permute(int[] table, int size, long value) {
