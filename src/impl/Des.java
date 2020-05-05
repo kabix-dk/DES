@@ -6,12 +6,14 @@ import java.math.BigInteger;
 
 public class Des {
 
+    private int option; // If 1 - encrypt, If 2 - decrypt
     private String message;
     private Key key;
 
-    public Des(Key key, String message) {
+    public Des(Key key, String message, int option) {
         this.key = key;
         this.message = message;
+        this.option = option;
     }
 
     public String execute() {
@@ -34,22 +36,31 @@ public class Des {
         keyValue = permute(Permutations.getPermutedChoice(), 64, keyValue);
         System.out.println("Key after permuted choice permutation: " + Long.toBinaryString(keyValue));
 
-        // Divide, shift and union key
-        subKeys = divideShiftAndUnionKey(keyValue);
-
         // Divide message to left and right parts
         int l = (int) (messageValue >> 32);
         int r = (int) (messageValue & 0xFFFFFFFFL);
 
-        long encryptedMessage = encrypt(l, r, subKeys); // Execute main encryption function
+        System.out.println("Message left side:  " + Integer.toBinaryString(l));
+        System.out.println("Message right side: " + Integer.toBinaryString(r));
 
-        String hexResult = printLongAsHexString(encryptedMessage); // Transform long to HexString
+        long encryptedMessage;
+        String hexResult;
+        String result;
 
-        String result = parseHexStringToString(hexResult); // Transform HexString to String
+        if(option == 1) {
+            subKeys = encryptDivideShiftAndUnionKey(keyValue); // Divide, shift and union key
+            encryptedMessage = encrypt(l, r, subKeys); // Execute main encryption function
+        } else {
+            subKeys = decryptDivideShiftAndUnionKey(keyValue);
+            encryptedMessage = decrypt(l, r, subKeys);
+        }
 
-        System.out.println("\nEncrypted block as a String: " + result);
+        hexResult = printLongAsHexString(encryptedMessage); // Transform long to HexString
+        result = parseHexStringToString(hexResult); // Transform HexString to String
+        System.out.println("\n" + (option == 1 ? "Encrypted" : "Decrypted") + " block as a String: " + result);
+        System.out.println("\n" + (option == 1 ? "Encrypted" : "Decrypted") + " block as a HexString: " + hexResult);
 
-        return result;
+        return hexResult;
     }
 
     private long encrypt(int l, int r, long[] subKeys) {
@@ -67,6 +78,7 @@ public class Des {
 
     private int f(int R, long key) {
         long extendedR = permute(Permutations.getExtensionPermutation(), 32, R);
+        System.out.println("R part after extension permutation: " + Long.toBinaryString(extendedR));
         long xor = extendedR ^ key;
         int result = 0;
         int[][] S = Permutations.getS();
@@ -83,7 +95,7 @@ public class Des {
         return (int) permute(Permutations.getPermutationFunction(), 32, result);
     }
 
-    private long[] divideShiftAndUnionKey(long value) {
+    private long[] encryptDivideShiftAndUnionKey(long value) {
         long[] resultKeys = new long[16];
 
         int c = (int) (value >> 28);
@@ -144,5 +156,42 @@ public class Des {
             result = (result << 1) | (value >> pos & 0x01);
         }
         return result;
+    }
+
+    private long[] decryptDivideShiftAndUnionKey(long value) {
+        long[] resultKeys = new long[16];
+
+        int c = (int) (value >> 28);
+        int d = (int) (value & 0x0FFFFFFF);
+
+        int[] shiftTable = Permutations.getShiftTab();
+
+        for (int i=15; i>=0; i--) {
+            if(shiftTable[i] == 1) {
+                c = (c >> 1) | ((c & 0x01) << 27);
+                d = (d >> 1) | ((d & 0x01) << 27);
+            } else {
+                c = (c >> 2) | ((c & 0x03) << 26);
+                d = (d >> 2) | ((d & 0x03) << 26);
+            }
+            long result = (c & 0xFFFFFFFFL) << 28 | (d & 0xFFFFFFFFL);
+            resultKeys[i] = permute(Permutations.getPermutedChoiceTwo(), 56, result);
+            System.out.println("SubKey nr. " + (i+1) + " : " + Long.toBinaryString(resultKeys[i]));
+        }
+
+        return resultKeys;
+    }
+
+    private long decrypt(int R, int L, long[] subKeys) {
+
+        for (int i=15; i>=0; i--) {
+            int prevR = R;
+            R = L;
+            L = prevR ^ f(L, subKeys[i]);
+        }
+
+        long result = (L & 0xFFFFFFFFL) << 32 | (R & 0xFFFFFFFFL);
+        System.out.println("Result before final permutation: " + Long.toBinaryString(result));
+        return permute(Permutations.getFinalPermutation(), 64, result);
     }
 }
