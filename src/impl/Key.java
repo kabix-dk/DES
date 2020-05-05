@@ -1,14 +1,13 @@
 package impl;
 
-import java.math.BigInteger;
 import java.util.Random;
 
 public class Key {
 
     private long value;
 
-    public Key() {
-        this.value = new BigInteger("07399d5955ffd2c2", 16).longValue(); // Key as a HexNumber
+    public Key(long value) {
+        this.value = value;
     }
 
     private long generateKey() {

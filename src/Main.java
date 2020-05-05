@@ -2,25 +2,31 @@ import impl.Des;
 import impl.Key;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Scanner;
 
 public class Main {
 
-    private static final String PATH = "input.txt";
-
     private static final int SIZE = 16; // 8 - input as a String, 16 - input as a HexString
-    private static final int ENCRYPT = 1; // Encryption mode
-    private static final int DECRYPT = 2; // Decryption mode
 
     public static void main(String[] args) {
 
+        System.out.print(">> Enter file name: ");
+
+        Scanner scanner = new Scanner(System.in);
+        String pathToFile = scanner.next();
+
+        System.out.print(">> Enter key as a hex number: ");
+
+        Key key = new Key(new BigInteger(scanner.next(), 16).longValue());
+        System.out.println("\nGenerated binary key: " + Long.toBinaryString(key.getValue()));
+
         try {
             String encryptedMessage = "";
-            String message = readFileAsString(PATH);
+            String message = readFileAsString(pathToFile);
             message = message.replace(" ", "");
-            Key key = new Key();
-            System.out.println("Generated key: " + Long.toBinaryString(key.getValue()) + "\n");
 
             if(message.length() % 16 != 0) {
                 int numberOfZeros = 16 - (message.length() % 16);
@@ -30,23 +36,13 @@ public class Main {
             System.out.println("Message with following zeros: " + message + "\n");
 
             for (int i=0; i<message.length(); i+=SIZE) {
-                System.out.println("Execution of " + (i/SIZE+1) + " block.");
+                System.out.println("Execution of " + (i/SIZE+1) + " block.\n");
                 String block = message.substring(i, Math.min(i+SIZE, message.length()));
-                Des des = new Des(key, block, ENCRYPT);
+                Des des = new Des(key, block);
                 encryptedMessage += des.execute();
                 System.out.println("\n");
             }
-            System.out.println("\nEncrypted message: " + encryptedMessage + "\n");
-
-            String decryptedMessage = "";
-            for (int i=0; i<encryptedMessage.length(); i+=SIZE) {
-                System.out.println("Execution of " + (i/SIZE+1) + " block.");
-                String block = message.substring(i, Math.min(i+SIZE, message.length()));
-                Des des = new Des(key, block, DECRYPT);
-                decryptedMessage += des.execute();
-                System.out.println("\n");
-            }
-            System.out.println("\nDecrypted message: " + decryptedMessage);
+            System.out.println("Encrypted message: " + encryptedMessage + "\n");
 
         } catch (IOException e) {
             e.printStackTrace();
