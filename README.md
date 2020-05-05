@@ -1,1 +1,1 @@
-# Simple app to encrypt message using DES algorithm.
+Simple app to encrypt message using DES algorithm.
