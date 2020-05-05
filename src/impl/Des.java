@@ -3,7 +3,6 @@ package impl;
 import utils.Permutations;
 
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 
 public class Des {
 
@@ -17,14 +16,8 @@ public class Des {
 
     public String execute() {
         // Transform String to Long
-        StringBuffer sb = new StringBuffer();
-        char ch[] = message.toCharArray();
-        for (int i=0; i<ch.length; i++) {
-            String hexString = Integer.toHexString(ch[i]);
-            sb.append(hexString);
-        }
-        String res = sb.toString();
-        BigInteger msValue = new BigInteger(res, 16);
+        // message = parseStringToHexString(message); // If message is just a String
+        BigInteger msValue = new BigInteger(message, 16); // If message is a HexString
 
         // Init Values
         long messageValue = msValue.longValue();
@@ -48,33 +41,25 @@ public class Des {
         int l = (int) (messageValue >> 32);
         int r = (int) (messageValue & 0xFFFFFFFFL);
 
-        long encryptedMessage = encrypt(l, r, subKeys);
+        long encryptedMessage = encrypt(l, r, subKeys); // Execute main encryption function
 
-        StringBuilder result = new StringBuilder();
-        String hexResult = Long.toHexString(encryptedMessage);
-        System.out.print("Encrypted block as a Hex: ");
-        for (int i=0; i<hexResult.length()-1; i+=2) {
-            String temp = hexResult.substring(i, (i+2));
-            System.out.print(temp + " ");
+        String hexResult = printLongAsHexString(encryptedMessage); // Transform long to HexString
 
-            int decimal = Integer.parseInt(temp, 16);
+        String result = parseHexStringToString(hexResult); // Transform HexString to String
 
-            result.append((char) decimal);
-        }
+        System.out.println("\nEncrypted block as a String: " + result);
 
-        System.out.println("");
-
-        System.out.println("Encrypted block as a String: " + result);
-
-        return result.toString();
+        return result;
     }
 
     private long encrypt(int l, int r, long[] subKeys) {
+
         for (int i=0; i<16; i++) {
             int prevL = l;
             l = r;
             r = prevL ^ f(r, subKeys[i]);
         }
+
         long result = (r & 0xFFFFFFFFL) << 32 | (l & 0xFFFFFFFFL);
         System.out.println("Result before final permutation: " + Long.toBinaryString(result));
         return permute(Permutations.getFinalPermutation(), 64, result);
@@ -105,6 +90,7 @@ public class Des {
         int d = (int) (value & 0x0FFFFFFF);
 
         int[] shiftTable = Permutations.getShiftTab();
+
         for (int i=0; i<16; i++) {
             if(shiftTable[i] == 1) {
                 c = ((c << 1) & 0x0FFFFFFF) | (c >> 27);
@@ -121,21 +107,34 @@ public class Des {
         return resultKeys;
     }
 
-    private byte[] parseStringToBytes(String s) {
-        return s.getBytes();
+    private String parseStringToHexString(String s) {
+        StringBuffer sb = new StringBuffer();
+        char ch[] = s.toCharArray();
+        for (int i=0; i<ch.length; i++) {
+            String hexString = Integer.toHexString(ch[i]);
+            sb.append(hexString);
+        }
+        return sb.toString();
     }
 
-    private long parseBytesToLong(byte[] bytes) {
-        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-        buffer.put(bytes);
-        buffer.flip();
-        return buffer.getLong();
+    private String printLongAsHexString(long l) {
+        String hexResult = Long.toHexString(l);
+        System.out.print("Encrypted block as a Hex: ");
+        for (int i=0; i<hexResult.length()-1; i+=2) {
+            String temp = hexResult.substring(i, (i+2));
+            System.out.print(temp + " ");
+        }
+        return hexResult;
     }
 
-    private byte[] parseLongToBytes(long l) {
-        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-        buffer.putLong(l);
-        return buffer.array();
+    private String parseHexStringToString(String hexString) {
+        StringBuilder result = new StringBuilder();
+        for (int i=0; i<hexString.length()-1; i+=2) {
+            String temp = hexString.substring(i, (i+2));
+            int decimal = Integer.parseInt(temp, 16);
+            result.append((char) decimal);
+        }
+        return result.toString();
     }
 
     private long permute(int[] table, int size, long value) {

@@ -1,6 +1,6 @@
 package impl;
 
-import java.nio.ByteBuffer;
+import java.math.BigInteger;
 import java.util.Random;
 
 public class Key {
@@ -8,8 +8,7 @@ public class Key {
     private long value;
 
     public Key() {
-        this.value = parseBytesToLong(parseStringToBytes("abcdefgh"));
-//        this.value = generateKey();
+        this.value = new BigInteger("07399d5955ffd2c2", 16).longValue(); // Key as a HexNumber
     }
 
     private long generateKey() {
@@ -30,16 +29,5 @@ public class Key {
         return "Key{" +
                 "value=" + value +
                 '}';
-    }
-
-    private byte[] parseStringToBytes(String s) {
-        return s.getBytes();
-    }
-
-    private long parseBytesToLong(byte[] bytes) {
-        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-        buffer.put(bytes);
-        buffer.flip();
-        return buffer.getLong();
     }
 }
